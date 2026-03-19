@@ -45,6 +45,10 @@ All recognition tools accept:
 | `imagePath`  | Absolute path to a local image file (JPEG, PNG, or WebP)        |
 | `includeRaw` | Include raw Brickognize API response in output (default: false) |
 
+## Examples
+
+See the [examples](./examples) folder for prompt templates you can use with this MCP server.
+
 ## Development
 
 ```bash
