@@ -28,22 +28,33 @@ Add to your MCP client config:
 
 ## Tools
 
-| Tool                        | Description                          |
-| --------------------------- | ------------------------------------ |
-| `brickognize_health`        | Check API status                     |
-| `brickognize_identify`      | Identify any LEGO item from an image |
-| `brickognize_identify_part` | Identify a specific LEGO part        |
-| `brickognize_identify_set`  | Identify a LEGO set                  |
-| `brickognize_identify_fig`  | Identify a LEGO minifigure           |
+| Tool                         | Description                                          |
+| ---------------------------- | ---------------------------------------------------- |
+| `brickognize_health`         | Check API status                                     |
+| `brickognize_identify`       | Identify any LEGO item from an image                 |
+| `brickognize_identify_part`  | Identify a specific LEGO part                        |
+| `brickognize_identify_set`   | Identify a LEGO set                                  |
+| `brickognize_identify_fig`   | Identify a LEGO minifigure                           |
+| `brickognize_batch_identify` | Identify multiple LEGO items from images in parallel |
 
 ## Image Input
 
-All recognition tools accept:
+All single-image tools accept:
 
 | Parameter    | Description                                                     |
 | ------------ | --------------------------------------------------------------- |
 | `imagePath`  | Absolute path to a local image file (JPEG, PNG, or WebP)        |
 | `includeRaw` | Include raw Brickognize API response in output (default: false) |
+
+### Batch Tool
+
+`brickognize_batch_identify` processes multiple images in a single call — significantly faster than calling single-image tools in a loop.
+
+| Parameter    | Description                                                                                |
+| ------------ | ------------------------------------------------------------------------------------------ |
+| `imagePaths` | Array of absolute paths to local image files (1–20 images)                                 |
+| `type`       | `"part"` \| `"set"` \| `"fig"` \| `"general"` — type of identification (default: `"part"`) |
+| `includeRaw` | Include raw Brickognize API response in each result (default: false)                       |
 
 ## Examples
 
