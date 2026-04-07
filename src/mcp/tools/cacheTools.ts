@@ -1,5 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { CacheBackend } from "../cache/index.js";
+import type { CacheBackend } from "../../core/cache/index.js";
 import { toolError, toolSuccess } from "./shared.js";
 
 export function registerCacheClearTool(server: McpServer, cache: CacheBackend): void {

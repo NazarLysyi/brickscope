@@ -1,9 +1,10 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { PredictionResult } from "../brickognize/types.js";
-import { predict } from "../brickognize/client.js";
-import { mapPredictionResult } from "../brickognize/mappers.js";
-import { formatToolError } from "../utils/errors.js";
+import type { PredictionResult } from "../../core/brickognize/types.js";
+import { predict } from "../../core/brickognize/client.js";
+import { mapPredictionResult } from "../../core/brickognize/mappers.js";
+import { formatToolError } from "../../core/utils/errors.js";
+import { runWithConcurrencyLimit } from "../../core/concurrency.js";
 import { PREDICT_ENDPOINTS, resolveImage, TOOL_ANNOTATIONS, toolSuccess } from "./shared.js";
 
 const CONCURRENCY_LIMIT = 5;
@@ -26,29 +27,6 @@ async function processSingleImage(
   } catch (err) {
     return { imagePath, status: "error", error: formatToolError(err) };
   }
-}
-
-/**
- * Runs tasks with a bounded concurrency pool.
- * Preserves result order. Never throws — tasks must handle their own errors.
- */
-async function runWithConcurrencyLimit<T>(
-  tasks: (() => Promise<T>)[],
-  limit: number,
-): Promise<T[]> {
-  const results: T[] = new Array(tasks.length);
-  let nextIndex = 0;
-
-  async function worker() {
-    while (nextIndex < tasks.length) {
-      const index = nextIndex++;
-      results[index] = await tasks[index]();
-    }
-  }
-
-  const workers = Array.from({ length: Math.min(limit, tasks.length) }, () => worker());
-  await Promise.all(workers);
-  return results;
 }
 
 export function registerBatchIdentifyTool(server: McpServer): void {

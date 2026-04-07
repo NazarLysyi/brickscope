@@ -1,5 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { checkHealth } from "../brickognize/client.js";
+import { checkHealth } from "../../core/brickognize/client.js";
 import { TOOL_ANNOTATIONS, toolError, toolSuccess } from "./shared.js";
 
 export function registerHealthTool(server: McpServer): void {

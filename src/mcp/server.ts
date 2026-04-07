@@ -6,8 +6,8 @@ import { registerPartDetailsTool, registerBatchPartDetailsTool } from "./tools/p
 import { registerSetDetailsTool } from "./tools/setDetails.js";
 import { registerMinifigDetailsTool } from "./tools/minifigDetails.js";
 import { registerCacheClearTool } from "./tools/cacheTools.js";
-import { initCache } from "./cache/index.js";
-import { setCache } from "./rebrickable/client.js";
+import { initCache } from "../core/cache/index.js";
+import { setCache } from "../core/rebrickable/client.js";
 
 const SERVER_INSTRUCTIONS = `\
 You are connected to the Brickognize LEGO recognition server.

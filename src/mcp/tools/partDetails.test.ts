@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { normalizeColorName, matchColorByName, buildSingleSummary } from "./partDetails.js";
-import type { RebrickablePartColor } from "../rebrickable/types.js";
+import type { RebrickablePartColor } from "../../core/rebrickable/types.js";
 
 const makeColor = (id: number, name: string, numSets = 10): RebrickablePartColor => ({
   color_id: id,
