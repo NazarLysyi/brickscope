@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { predict } from "../brickognize/client.js";
-import { mapPredictionResult } from "../brickognize/mappers.js";
+import { predict } from "../../core/brickognize/client.js";
+import { mapPredictionResult } from "../../core/brickognize/mappers.js";
 import {
   imageInputSchema,
   PREDICT_ENDPOINTS,

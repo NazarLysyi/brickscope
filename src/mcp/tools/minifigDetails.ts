@@ -1,6 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { getMinifigDetails, getMinifigSets } from "../rebrickable/client.js";
+import { fetchMinifigDetails, buildMinifigSummary } from "../../core/rebrickable/minifigDetails.js";
 import { TOOL_ANNOTATIONS, toolError, toolSuccess } from "./shared.js";
 
 export function registerMinifigDetailsTool(server: McpServer): void {
@@ -20,30 +20,8 @@ export function registerMinifigDetailsTool(server: McpServer): void {
     },
     async (input) => {
       try {
-        const minifig = await getMinifigDetails(input.minifigId);
-        const sets = await getMinifigSets(input.minifigId);
-
-        const result = {
-          minifig: {
-            id: minifig.set_num,
-            name: minifig.name,
-            numParts: minifig.num_parts,
-            imageUrl: minifig.set_img_url,
-            url: minifig.set_url,
-          },
-          appearsInSets: sets.map((s) => ({
-            setNum: s.set_num,
-            setName: s.name,
-            numParts: s.num_parts,
-            imageUrl: s.set_img_url,
-            setUrl: s.set_url,
-          })),
-        };
-
-        const summary =
-          `Minifigure ${minifig.set_num}: ${minifig.name}. ` +
-          `${minifig.num_parts} parts. Appears in ${sets.length} set(s).`;
-
+        const result = await fetchMinifigDetails(input.minifigId);
+        const summary = buildMinifigSummary(result);
         return toolSuccess(summary, JSON.stringify(result, null, 2));
       } catch (error) {
         return toolError(error);

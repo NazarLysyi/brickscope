@@ -1,33 +1,36 @@
-# Brickognize MCP Server
+# Brickscope
 
-MCP server for identifying LEGO parts, sets, and minifigures from images using the [Brickognize API](https://api.brickognize.com/docs).
+Identify LEGO parts, sets, and minifigures from images — as a **CLI tool** or an **MCP server** for AI assistants.
+
+Powered by the [Brickognize API](https://api.brickognize.com/docs) and [Rebrickable](https://rebrickable.com/api/).
 
 Huge thanks to [Piotr Rybak](https://brickognize.com/about) for creating the Brickognize service and making LEGO recognition accessible to everyone!
 
-## Setup
+## CLI
 
 ```bash
-npm install
-npm run build
+npm install -g brickscope
+
+brickscope identify photo.jpg --type part
+brickscope part 3001 --color Black
+brickscope set 75192
+brickscope minifig fig-012805
 ```
 
-## Configuration
+Or run without installing: `npx brickscope identify photo.jpg`
 
-### Environment Variables
+[Full CLI documentation](./docs/cli.md)
 
-| Variable              | Required | Default | Description                                                                                       |
-| --------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------- |
-| `REBRICKABLE_API_KEY` | Optional | —       | Free API key from [rebrickable.com/api](https://rebrickable.com/api/). Required for lookup tools. |
-| `BRICKOGNIZE_CACHE`   | Optional | `none`  | Cache backend for Rebrickable API responses. See [Caching](#caching) below.                       |
+## MCP Server
 
-### MCP Client Config
+For AI assistants (Claude, Cursor, etc.), add to your MCP config:
 
 ```json
 {
   "mcpServers": {
-    "brickognize": {
-      "command": "node",
-      "args": ["/absolute/path/to/brickognize-mcp/dist/index.js"],
+    "brickscope": {
+      "command": "npx",
+      "args": ["-y", "brickscope", "mcp"],
       "env": {
         "REBRICKABLE_API_KEY": "your-key-here",
         "BRICKOGNIZE_CACHE": "sqlite"
@@ -37,72 +40,52 @@ npm run build
 }
 ```
 
-### Caching
+[Full MCP documentation](./docs/mcp.md)
 
-Rebrickable API responses can be cached to speed up repeated lookups and reduce API calls. Configure with `BRICKOGNIZE_CACHE`:
+## Configuration
 
-| Value    | Behaviour                                                                          |
-| -------- | ---------------------------------------------------------------------------------- |
-| `none`   | No caching (default). Every request hits the Rebrickable API.                      |
-| `memory` | In-process cache. Fast, but cleared on every server restart.                       |
-| `sqlite` | Persistent cache stored at `~/.cache/brickognize-mcp/cache.db`. Survives restarts. |
+### Config file (CLI)
 
-Use `sqlite` in production, `memory` for short-lived sessions, `none` to always get fresh data.
+```bash
+brickscope config init
+```
 
-To clear the cache, call the `brickognize_cache_clear` tool (available when cache is enabled).
+Creates `~/.config/brickscope/config.json` with your Rebrickable API key and cache settings.
 
-## Tools
+### Environment variables
 
-### Recognition Tools
+| Variable              | Default | Description                                                                                       |
+| --------------------- | ------- | ------------------------------------------------------------------------------------------------- |
+| `REBRICKABLE_API_KEY` | —       | Free API key from [rebrickable.com/api](https://rebrickable.com/api/). Required for lookup tools. |
+| `BRICKOGNIZE_CACHE`   | `none`  | Cache mode: `none`, `memory`, or `sqlite`                                                         |
 
-| Tool                         | Description                                          |
-| ---------------------------- | ---------------------------------------------------- |
-| `brickognize_health`         | Check API status                                     |
-| `brickognize_identify`       | Identify any LEGO item from an image                 |
-| `brickognize_identify_part`  | Identify a specific LEGO part                        |
-| `brickognize_identify_set`   | Identify a LEGO set                                  |
-| `brickognize_identify_fig`   | Identify a LEGO minifigure                           |
-| `brickognize_batch_identify` | Identify multiple LEGO items from images in parallel |
+Environment variables take priority over the config file.
 
-### Lookup Tools (require `REBRICKABLE_API_KEY`)
+## Features
 
-| Tool                             | Description                                           |
-| -------------------------------- | ----------------------------------------------------- |
-| `brickognize_part_details`       | Part colors and which sets contain it (appears in)    |
-| `brickognize_batch_part_details` | Same as above but for multiple parts in a single call |
-| `brickognize_set_details`        | Set info, year, theme, and full parts inventory       |
-| `brickognize_minifig_details`    | Minifigure info and which sets contain it             |
-
-## Image Input
-
-All single-image tools accept:
-
-| Parameter    | Description                                                     |
-| ------------ | --------------------------------------------------------------- |
-| `imagePath`  | Absolute path to a local image file (JPEG, PNG, or WebP)        |
-| `includeRaw` | Include raw Brickognize API response in output (default: false) |
-
-### Batch Tool
-
-`brickognize_batch_identify` processes multiple images in a single call — significantly faster than calling single-image tools in a loop.
-
-| Parameter    | Description                                                                                |
-| ------------ | ------------------------------------------------------------------------------------------ |
-| `imagePaths` | Array of absolute paths to local image files (1–20 images)                                 |
-| `type`       | `"part"` \| `"set"` \| `"fig"` \| `"general"` — type of identification (default: `"part"`) |
-| `includeRaw` | Include raw Brickognize API response in each result (default: false)                       |
+- **Image recognition** — identify parts, sets, minifigures, and stickers from photos
+- **Batch processing** — identify multiple images in parallel
+- **Part lookup** — colors, set appearances via Rebrickable
+- **Set inventory** — full parts list, year, theme, piece count
+- **Minifigure lookup** — details and set appearances
+- **Caching** — in-memory or SQLite cache for Rebrickable API responses
+- **Config file** — save API key and preferences once, use everywhere
 
 ## Examples
 
-See the [examples](./examples) folder for prompt templates you can use with this MCP server.
+See the [examples](./examples) folder for prompt templates.
 
 ## Development
 
 ```bash
+npm install
+npm run build
 npm run dev           # Watch mode
-npm run build         # Compile
+npm test              # Unit + integration tests
 npm run lint          # ESLint
 npm run format        # Prettier
-npm test              # Unit + integration tests (live API tests skipped without REBRICKABLE_API_KEY)
-REBRICKABLE_API_KEY=your-key npm test  # Full suite including live API tests
 ```
+
+## License
+
+MIT

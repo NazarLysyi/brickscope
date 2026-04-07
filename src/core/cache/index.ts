@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { homedir } from "node:os";
 import type { CacheBackend } from "./types.js";
 import { MemoryCache } from "./memory.js";
 import { SqliteCache } from "./sqlite.js";
@@ -11,9 +11,7 @@ function resolveCacheDbPath(): string {
   if (process.env.BRICKOGNIZE_CACHE_DIR) {
     return join(process.env.BRICKOGNIZE_CACHE_DIR, "cache.db");
   }
-  // Default: project root (two levels up from dist/cache/index.js → project/)
-  const projectRoot = fileURLToPath(new URL("../..", import.meta.url));
-  return join(projectRoot, "cache.db");
+  return join(homedir(), ".cache", "brickscope", "cache.db");
 }
 
 export function initCache(): CacheBackend | null {
@@ -27,13 +25,13 @@ export function initCache(): CacheBackend | null {
     try {
       return new SqliteCache(resolveCacheDbPath());
     } catch (err) {
-      console.error("[brickognize-mcp] SQLite cache init failed, running without cache:", err);
+      console.error("[brickognize] SQLite cache init failed, running without cache:", err);
       return null;
     }
   }
 
   console.error(
-    `[brickognize-mcp] Unknown BRICKOGNIZE_CACHE value "${mode}", ignoring. Valid values: none, memory, sqlite`,
+    `[brickognize] Unknown BRICKOGNIZE_CACHE value "${mode}", ignoring. Valid values: none, memory, sqlite`,
   );
   return null;
 }

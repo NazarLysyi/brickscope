@@ -1,12 +1,21 @@
 {
-  "name": "brickognize-mcp",
-  "version": "1.0.0",
-  "description": "MCP server for the Brickognize LEGO recognition API",
+  "name": "brickscope",
+  "version": "0.1.0",
+  "description": "CLI and MCP server for LEGO recognition — identify parts, sets, and minifigures from images",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/mcp/index.js",
+  "bin": {
+    "brickscope": "dist/cli/index.js"
+  },
+  "files": [
+    "dist/**/*.js",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/cli/index.js",
+    "start:mcp": "node dist/mcp/index.js",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -18,13 +27,18 @@
   "keywords": [
     "mcp",
     "lego",
+    "brickscope",
     "brickognize",
-    "image-recognition"
+    "image-recognition",
+    "cli",
+    "brick",
+    "rebrickable"
   ],
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
     "better-sqlite3": "^9.6.0",
+    "commander": "^14.0.3",
     "zod": "^3.24.0"
   },
   "devDependencies": {
