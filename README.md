@@ -86,6 +86,8 @@ pnpm lint             # ESLint
 pnpm format           # Prettier
 ```
 
+Requires Node.js 22.12+ and pnpm 12. The build uses TypeScript 7 (`@typescript/native`), while the `typescript` package is aliased to the TypeScript 6 API (`@typescript/typescript6`) because typescript-eslint and editors still need it.
+
 ## License
 
 MIT
