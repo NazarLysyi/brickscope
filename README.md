@@ -78,12 +78,12 @@ See the [examples](./examples) folder for prompt templates.
 ## Development
 
 ```bash
-npm install
-npm run build
-npm run dev           # Watch mode
-npm test              # Unit + integration tests
-npm run lint          # ESLint
-npm run format        # Prettier
+pnpm install
+pnpm build
+pnpm dev              # Watch mode
+pnpm test             # Unit + integration tests
+pnpm lint             # ESLint
+pnpm format           # Prettier
 ```
 
 ## License
