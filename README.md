@@ -78,13 +78,15 @@ See the [examples](./examples) folder for prompt templates.
 ## Development
 
 ```bash
-npm install
-npm run build
-npm run dev           # Watch mode
-npm test              # Unit + integration tests
-npm run lint          # ESLint
-npm run format        # Prettier
+pnpm install
+pnpm build
+pnpm dev              # Watch mode
+pnpm test             # Unit + integration tests
+pnpm lint             # ESLint
+pnpm format           # Prettier
 ```
+
+Requires Node.js 22.12+ and pnpm 12. The build uses TypeScript 7 (`@typescript/native`), while the `typescript` package is aliased to the TypeScript 6 API (`@typescript/typescript6`) because typescript-eslint and editors still need it.
 
 ## License
 
