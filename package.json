@@ -1,6 +1,6 @@
 {
   "name": "brickscope",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CLI and MCP server for LEGO recognition — identify parts, sets, and minifigures from images",
   "type": "module",
   "main": "dist/mcp/index.js",
@@ -22,7 +22,8 @@
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepublishOnly": "pnpm build"
   },
   "keywords": [
     "mcp",

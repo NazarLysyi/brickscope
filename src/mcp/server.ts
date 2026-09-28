@@ -8,6 +8,7 @@ import { registerMinifigDetailsTool } from "./tools/minifigDetails.js";
 import { registerCacheClearTool } from "./tools/cacheTools.js";
 import { initCache } from "../core/cache/index.js";
 import { setCache } from "../core/rebrickable/client.js";
+import { VERSION } from "../core/version.js";
 
 const SERVER_INSTRUCTIONS = `\
 You are connected to the Brickognize LEGO recognition server.
@@ -44,7 +45,7 @@ export function createServer(): McpServer {
   setCache(cache);
 
   const server = new McpServer(
-    { name: "brickognize", version: "1.0.0" },
+    { name: "brickognize", version: VERSION },
     { instructions: SERVER_INSTRUCTIONS },
   );
 
