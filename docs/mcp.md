@@ -28,7 +28,7 @@ No installation needed. Configure your MCP client to run:
 ```bash
 git clone https://github.com/NazarLysyi/brickognize-mcp.git
 cd brickognize-mcp
-npm install && npm run build
+pnpm install && pnpm build
 ```
 
 Then configure your MCP client:
