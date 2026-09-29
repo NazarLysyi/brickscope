@@ -88,6 +88,10 @@ pnpm format           # Prettier
 
 Requires Node.js 22.12+ and pnpm 12. The build uses TypeScript 7 (`@typescript/native`), while the `typescript` package is aliased to the TypeScript 6 API (`@typescript/typescript6`) because typescript-eslint and editors still need it.
 
+### Releasing
+
+Releases are automated with [release-please](https://github.com/googleapis/release-please). PR titles follow [Conventional Commits](https://www.conventionalcommits.org/) and are squash-merged: `fix:` bumps the patch version, `feat:` the minor version. After each merge to `main`, release-please keeps a release PR up to date with the version bump and `CHANGELOG.md`. Merging it tags the release, creates a GitHub Release and publishes to npm.
+
 ## License
 
 MIT

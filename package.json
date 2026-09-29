@@ -57,5 +57,9 @@
   "engines": {
     "node": ">=22.12.0"
   },
-  "packageManager": "pnpm@12.6.0"
+  "packageManager": "pnpm@12.6.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NazarLysyi/brickscope.git"
+  }
 }
