@@ -3,16 +3,15 @@ import { predict } from "../../core/brickognize/client.js";
 import { mapPredictionResult } from "../../core/brickognize/mappers.js";
 import { resolveImage, PREDICT_ENDPOINTS } from "../../core/image.js";
 import { runWithConcurrencyLimit } from "../../core/concurrency.js";
+import { PREDICT_CONCURRENCY } from "../../core/brickognize/batch.js";
 import { formatToolError } from "../../core/utils/errors.js";
 import { formatPrediction } from "../output.js";
-
-const CONCURRENCY_LIMIT = 5;
 
 export function registerIdentifyCommand(program: Command): void {
   program
     .command("identify")
     .description("Identify LEGO item(s) from photo(s)")
-    .argument("<images...>", "Path(s) to image files (JPEG, PNG, or WebP)")
+    .argument("<images...>", "Path(s) to image files (JPEG, PNG, WebP, or HEIC)")
     .option("-t, --type <type>", "Item type: general, part, set, fig", "general")
     .option("--json", "Output raw JSON")
     .action(async (images: string[], opts) => {
@@ -47,7 +46,7 @@ export function registerIdentifyCommand(program: Command): void {
             }
           });
 
-          const results = await runWithConcurrencyLimit(tasks, CONCURRENCY_LIMIT);
+          const results = await runWithConcurrencyLimit(tasks, PREDICT_CONCURRENCY);
 
           if (opts.json) {
             console.log(JSON.stringify(results, null, 2));

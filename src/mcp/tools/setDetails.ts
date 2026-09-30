@@ -5,7 +5,7 @@ import {
   buildSetSummary,
   normalizeSetNum,
 } from "../../core/rebrickable/setDetails.js";
-import { TOOL_ANNOTATIONS, toolError, toolSuccess } from "./shared.js";
+import { MCP_TIME_BUDGET_MS, TOOL_ANNOTATIONS, toolError, toolSuccess } from "./shared.js";
 
 // Re-export for tests
 export { normalizeSetNum };
@@ -29,9 +29,12 @@ export function registerSetDetailsTool(server: McpServer): void {
       },
       annotations: TOOL_ANNOTATIONS,
     },
-    async (input) => {
+    async (input, extra) => {
       try {
-        const result = await fetchSetDetails(input.setId);
+        const result = await fetchSetDetails(
+          input.setId,
+          AbortSignal.any([extra.signal, AbortSignal.timeout(MCP_TIME_BUDGET_MS)]),
+        );
         const summary = buildSetSummary(result);
         return toolSuccess(summary, JSON.stringify(result, null, 2));
       } catch (error) {

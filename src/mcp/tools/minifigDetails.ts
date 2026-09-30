@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { fetchMinifigDetails, buildMinifigSummary } from "../../core/rebrickable/minifigDetails.js";
-import { TOOL_ANNOTATIONS, toolError, toolSuccess } from "./shared.js";
+import { MCP_TIME_BUDGET_MS, TOOL_ANNOTATIONS, toolError, toolSuccess } from "./shared.js";
 
 export function registerMinifigDetailsTool(server: McpServer): void {
   server.registerTool(
@@ -18,9 +18,12 @@ export function registerMinifigDetailsTool(server: McpServer): void {
       },
       annotations: TOOL_ANNOTATIONS,
     },
-    async (input) => {
+    async (input, extra) => {
       try {
-        const result = await fetchMinifigDetails(input.minifigId);
+        const result = await fetchMinifigDetails(
+          input.minifigId,
+          AbortSignal.any([extra.signal, AbortSignal.timeout(MCP_TIME_BUDGET_MS)]),
+        );
         const summary = buildMinifigSummary(result);
         return toolSuccess(summary, JSON.stringify(result, null, 2));
       } catch (error) {

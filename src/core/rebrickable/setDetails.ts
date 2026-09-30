@@ -36,10 +36,13 @@ export interface SetDetailsResult {
   }[];
 }
 
-export async function fetchSetDetails(setId: string): Promise<SetDetailsResult> {
+export async function fetchSetDetails(
+  setId: string,
+  signal?: AbortSignal,
+): Promise<SetDetailsResult> {
   const setNum = normalizeSetNum(setId);
-  const set = await getSetDetails(setNum);
-  const parts = await getSetParts(setNum);
+  const set = await getSetDetails(setNum, signal);
+  const parts = await getSetParts(setNum, signal);
 
   const regularParts = parts.filter((p) => !p.is_spare);
   const spareParts = parts.filter((p) => p.is_spare);

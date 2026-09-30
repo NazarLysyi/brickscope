@@ -17,9 +17,12 @@ export interface MinifigDetailsResult {
   }[];
 }
 
-export async function fetchMinifigDetails(minifigId: string): Promise<MinifigDetailsResult> {
-  const minifig = await getMinifigDetails(minifigId);
-  const sets = await getMinifigSets(minifigId);
+export async function fetchMinifigDetails(
+  minifigId: string,
+  signal?: AbortSignal,
+): Promise<MinifigDetailsResult> {
+  const minifig = await getMinifigDetails(minifigId, signal);
+  const sets = await getMinifigSets(minifigId, signal);
 
   return {
     minifig: {
