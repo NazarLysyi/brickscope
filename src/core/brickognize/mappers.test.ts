@@ -36,6 +36,13 @@ const BASE_RAW: RawSearchResults = {
 };
 
 describe("mapPredictionResult — bounding box", () => {
+  it("tolerates a response without a bounding box", () => {
+    const raw = { ...BASE_RAW, bounding_box: undefined } as unknown as RawSearchResults;
+    const result = mapPredictionResult(raw, false);
+    expect(result.boundingBox.score).toBe(0);
+    expect(result.matches).toHaveLength(2);
+  });
+
   it("maps snake_case fields to camelCase", () => {
     const result = mapPredictionResult(BASE_RAW, false);
     expect(result.boundingBox).toEqual({
@@ -114,6 +121,18 @@ describe("mapPredictionResult — predictedColors", () => {
       { id: "0", name: "Black", score: 0.85 },
       { id: "4", name: "Red", score: 0.1 },
     ]);
+  });
+
+  it("sorts colors best first", () => {
+    const raw: RawSearchResults = {
+      ...BASE_RAW,
+      colors: [
+        { id: "4", name: "Red", score: 0.1 },
+        { id: "0", name: "Black", score: 0.85 },
+      ],
+    };
+    const result = mapPredictionResult(raw, false);
+    expect(result.predictedColors?.map((c) => c.name)).toEqual(["Black", "Red"]);
   });
 
   it("omits predictedColors when colors absent", () => {

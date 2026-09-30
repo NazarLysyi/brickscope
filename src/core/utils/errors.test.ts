@@ -97,3 +97,10 @@ describe("formatToolError", () => {
     expect(formatToolError(null)).toBe("An unexpected error occurred");
   });
 });
+
+it("retains Rebrickable status while truncating large error bodies", () => {
+  const error = rebrickableApiError(503, "x".repeat(10000));
+  expect(error.status).toBe(503);
+  expect(error.message.length).toBeLessThan(400);
+  expect(error.message.endsWith("…")).toBe(true);
+});

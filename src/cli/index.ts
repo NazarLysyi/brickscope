@@ -6,6 +6,7 @@ import { setCache } from "../core/rebrickable/client.js";
 import { VERSION } from "../core/version.js";
 import { registerHealthCommand } from "./commands/health.js";
 import { registerIdentifyCommand } from "./commands/identify.js";
+import { registerScanCommand } from "./commands/scan.js";
 import { registerPartCommand } from "./commands/part.js";
 import { registerSetCommand } from "./commands/set.js";
 import { registerMinifigCommand } from "./commands/minifig.js";
@@ -26,6 +27,7 @@ const program = new Command()
 
 registerHealthCommand(program);
 registerIdentifyCommand(program);
+registerScanCommand(program);
 registerPartCommand(program);
 registerSetCommand(program);
 registerMinifigCommand(program);

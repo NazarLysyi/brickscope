@@ -6,15 +6,27 @@ import type {
   BoundingBox,
 } from "./types.js";
 
+const NO_BOUNDING_BOX: RawSearchResults["bounding_box"] = {
+  left: 0,
+  upper: 0,
+  right: 0,
+  lower: 0,
+  image_width: 0,
+  image_height: 0,
+  score: 0,
+};
+
 export function mapPredictionResult(raw: RawSearchResults, includeRaw: boolean): PredictionResult {
+  // A response without a detected object may omit the box; don't fail the whole result.
+  const box = raw.bounding_box ?? NO_BOUNDING_BOX;
   const boundingBox: BoundingBox = {
-    left: raw.bounding_box.left,
-    upper: raw.bounding_box.upper,
-    right: raw.bounding_box.right,
-    lower: raw.bounding_box.lower,
-    imageWidth: raw.bounding_box.image_width,
-    imageHeight: raw.bounding_box.image_height,
-    score: raw.bounding_box.score,
+    left: box.left,
+    upper: box.upper,
+    right: box.right,
+    lower: box.lower,
+    imageWidth: box.image_width,
+    imageHeight: box.image_height,
+    score: box.score,
   };
 
   const matches: Match[] = (raw.items ?? [])
@@ -32,11 +44,13 @@ export function mapPredictionResult(raw: RawSearchResults, includeRaw: boolean):
     }))
     .sort((a, b) => b.score - a.score);
 
-  const predictedColors: PredictedColor[] | undefined = raw.colors?.map((c) => ({
-    id: c.id,
-    name: c.name,
-    score: c.score,
-  }));
+  const predictedColors: PredictedColor[] | undefined = raw.colors
+    ?.map((c) => ({
+      id: c.id,
+      name: c.name,
+      score: c.score,
+    }))
+    .sort((a, b) => b.score - a.score);
 
   const summary = buildSummary(matches, predictedColors);
 

@@ -2,6 +2,7 @@ import type { PredictionResult } from "../core/brickognize/types.js";
 import type { PartDetailsResult } from "../core/rebrickable/partDetails.js";
 import type { SetDetailsResult } from "../core/rebrickable/setDetails.js";
 import type { MinifigDetailsResult } from "../core/rebrickable/minifigDetails.js";
+import type { ScanResult } from "../core/scan/types.js";
 
 export function formatPrediction(result: PredictionResult): string {
   const lines: string[] = [];
@@ -101,6 +102,72 @@ export function formatMinifigDetails(result: MinifigDetailsResult): string {
     }
   } else {
     lines.push("Does not appear in any sets.");
+  }
+
+  return lines.join("\n");
+}
+
+export function formatScan(
+  result: ScanResult,
+  files: { annotated: string | null; crops: string | null; regions: string | null },
+): string {
+  const lines: string[] = [result.summary, ""];
+  const settings = result.detectionSettings;
+  if (settings) {
+    lines.push(
+      `Detection: min contrast ${settings.minContrast}, min part size ${settings.minPartSize}%, join gap ${settings.joinGap}%`,
+      "",
+    );
+  }
+
+  for (const region of result.regions) {
+    const label = `  #${region.id}`;
+    const top = region.matches?.[0];
+    if (!region.status) {
+      lines.push(`${label}  [${region.box.join(", ")}]`);
+    } else if (region.status === "success" && top) {
+      const color = region.colors?.[0]?.name;
+      const score = (top.score * 100).toFixed(1);
+      lines.push(`${label}  ${top.id}  ${top.name}${color ? ` [${color}]` : ""}  ${score}%`);
+    } else if (region.status === "no_match") {
+      lines.push(`${label}  no match`);
+    } else {
+      lines.push(`${label}  error: ${region.error}`);
+    }
+  }
+
+  if (result.groups && result.groups.length > 0) {
+    lines.push("", "Parts (provisional):");
+    for (const group of result.groups) {
+      const color = group.colorName ? ` [${group.colorName}]` : "";
+      lines.push(`  ${group.count}x ${group.partId}  ${group.name}${color}`);
+    }
+  }
+
+  if (result.warnings.length > 0) {
+    lines.push("", "Warnings:");
+    for (const warning of result.warnings) {
+      lines.push(`  ${warning.code}: ${warning.message}`);
+    }
+  }
+
+  if (result.tips && result.tips.length > 0) {
+    lines.push("", "Tips for the next photo:");
+    for (const tip of result.tips) {
+      lines.push(`  - ${tip.message}`);
+    }
+  }
+
+  const written = [
+    ["Annotated", files.annotated],
+    ["Crops", files.crops],
+    ["Regions", files.regions],
+  ].filter((entry): entry is [string, string] => entry[1] !== null);
+  if (written.length > 0) {
+    lines.push("", "Files:");
+    for (const [label, path] of written) {
+      lines.push(`  ${`${label}:`.padEnd(10)} ${path}`);
+    }
   }
 
   return lines.join("\n");
