@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/NazarLysyi/brickscope/compare/v0.2.0...v0.3.0) (2026-10-05)
+
+
+### Features
+
+* scan one photo for multiple LEGO parts, with HEIC support ([#18](https://github.com/NazarLysyi/brickscope/issues/18)) ([c794cb7](https://github.com/NazarLysyi/brickscope/commit/c794cb765101d4d45b55043d119ac1b714ef633a))
+
 ## [0.2.0](https://github.com/NazarLysyi/brickscope/compare/v0.1.0...v0.2.0) (2026-09-29)
 
 
