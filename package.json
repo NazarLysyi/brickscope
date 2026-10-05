@@ -1,6 +1,6 @@
 {
   "name": "brickscope",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "CLI and MCP server for LEGO recognition — identify parts, sets, and minifigures from images",
   "type": "module",
   "main": "dist/mcp/index.js",
