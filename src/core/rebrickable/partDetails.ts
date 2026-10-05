@@ -1,5 +1,15 @@
 import { getPartColors, getPartColorSets, getPartDetails } from "./client.js";
 import type { RebrickablePartColor } from "./types.js";
+import { isRetryableLookupError } from "../utils/errors.js";
+
+/** Most parts brickognize_batch_part_details accepts per call. */
+export const MAX_BATCH_PARTS = 20;
+
+/**
+ * Parts per batch that finish within a 60s client timeout on a cold cache: a common part
+ * takes about 12 throttled requests (details, colors, up to 10 pages of sets) at ~1.1s each.
+ */
+export const RECOMMENDED_BATCH_PARTS = 3;
 
 export function normalizeColorName(name: string): string {
   return name.trim().toLowerCase();
@@ -22,6 +32,9 @@ export interface PartDetailsResult {
   };
   totalColors: number;
   totalSetsAppearances: number;
+  /** Some set lists are incomplete; look up remainingColors individually. */
+  partial?: boolean;
+  remainingColors?: string[];
   colorFilter?: string;
   colorMatched?: boolean;
   colorDetails: {
@@ -43,9 +56,10 @@ export interface PartDetailsResult {
 export async function fetchPartDetails(
   partId: string,
   colorName?: string,
+  signal?: AbortSignal,
 ): Promise<PartDetailsResult> {
-  const part = await getPartDetails(partId);
-  const colors = await getPartColors(partId);
+  const part = await getPartDetails(partId, signal);
+  const colors = await getPartColors(partId, signal);
 
   let targetColors: RebrickablePartColor[];
   let filterMode: "exact" | "top";
@@ -65,9 +79,25 @@ export async function fetchPartDetails(
   }
 
   // Sequential to respect Rebrickable rate limit (1 req/sec)
-  const colorSets = [];
+  const colorSets: PartDetailsResult["colorDetails"] = [];
+  const remainingColors: string[] = [];
   for (const color of targetColors) {
-    const sets = await getPartColorSets(partId, color.color_id);
+    let sets;
+    try {
+      signal?.throwIfAborted();
+      sets = await getPartColorSets(
+        partId,
+        color.color_id,
+        signal,
+        filterMode === "top" ? 1 : undefined,
+      );
+    } catch (error) {
+      // Keep what was fetched; a transient failure (timeout, 429, 5xx) leaves the rest to retry.
+      if (!signal?.aborted && !isRetryableLookupError(error)) throw error;
+      remainingColors.push(...targetColors.slice(colorSets.length).map((c) => c.color_name));
+      break;
+    }
+    if (sets.length < color.num_sets) remainingColors.push(color.color_name);
     colorSets.push({
       colorId: color.color_id,
       colorName: color.color_name,
@@ -97,6 +127,7 @@ export async function fetchPartDetails(
     totalSetsAppearances: totalSets,
     ...(colorName ? { colorFilter: colorName, colorMatched: filterMode === "exact" } : {}),
     colorDetails: colorSets,
+    ...(remainingColors.length > 0 ? { partial: true, remainingColors } : {}),
   };
 }
 
@@ -116,5 +147,7 @@ export function buildPartSummary(result: PartDetailsResult): string {
       ".";
   }
 
+  if (result.partial)
+    summary += ` Partial set lists; look up these colors individually: ${result.remainingColors?.join(", ")}.`;
   return summary;
 }

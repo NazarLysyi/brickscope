@@ -6,6 +6,10 @@
  * error handling, and (with REBRICKABLE_API_KEY set) live API calls.
  */
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import sharp from "sharp";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createServer } from "./server.js";
@@ -58,6 +62,7 @@ describe("tool registration", () => {
     expect(names).toContain("brickognize_identify_set");
     expect(names).toContain("brickognize_identify_fig");
     expect(names).toContain("brickognize_batch_identify");
+    expect(names).toContain("brickognize_scan_image");
     expect(names).toContain("brickognize_part_details");
     expect(names).toContain("brickognize_batch_part_details");
     expect(names).toContain("brickognize_set_details");
@@ -127,6 +132,107 @@ describe("schema validation", () => {
     const result = await client.callTool({ name: "brickognize_minifig_details", arguments: {} });
     expect(isError(result)).toBe(true);
     expect(textContent(result)).toContain("minifigId");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Scan tool — detect-only runs locally, no network needed
+// ---------------------------------------------------------------------------
+
+describe("brickognize_scan_image", () => {
+  let dir: string;
+  let photoPath: string;
+
+  beforeAll(async () => {
+    dir = await mkdtemp(join(tmpdir(), "brickscope-mcp-test-"));
+    photoPath = join(dir, "pile.png");
+    const block = (color: string) =>
+      sharp({ create: { width: 40, height: 30, channels: 3, background: color } })
+        .png()
+        .toBuffer();
+    await writeFile(
+      photoPath,
+      await sharp({ create: { width: 300, height: 200, channels: 3, background: "#f5f5f0" } })
+        .composite([
+          { input: await block("#c91a09"), left: 30, top: 40 },
+          { input: await block("#0055bf"), left: 200, top: 120 },
+        ])
+        .png()
+        .toBuffer(),
+    );
+  });
+
+  afterAll(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it("returns regions and both preview images in detect-only mode", async () => {
+    const result = await client.callTool({
+      name: "brickognize_scan_image",
+      arguments: { imagePath: photoPath, detectOnly: true },
+    });
+
+    expect(isError(result)).toBe(false);
+    const content = result.content as Array<{ type: string; mimeType?: string; text?: string }>;
+    const images = content.filter((c) => c.type === "image");
+    expect(images).toHaveLength(2);
+    expect(images.every((c) => c.mimeType === "image/jpeg")).toBe(true);
+    expect(JSON.parse(content[1].text ?? "{}").regions).toHaveLength(2);
+  });
+
+  it("accepts detection settings", async () => {
+    const result = await client.callTool({
+      name: "brickognize_scan_image",
+      arguments: { imagePath: photoPath, detectOnly: true, minContrast: 20, joinGap: 0 },
+    });
+    expect(isError(result)).toBe(false);
+    const content = result.content as Array<{ type: string; text?: string }>;
+    expect(JSON.parse(content[1].text ?? "{}").detectionSettings).toMatchObject({
+      minContrast: 20,
+      joinGap: 0,
+    });
+  });
+
+  it("accepts an empty list of approved boxes and returns no previews outside detect-only", async () => {
+    const result = await client.callTool({
+      name: "brickognize_scan_image",
+      arguments: { imagePath: photoPath, boxes: [] },
+    });
+
+    expect(isError(result)).toBe(false);
+    const content = result.content as Array<{ type: string; text?: string }>;
+    expect(content.every((c) => c.type === "text")).toBe(true);
+    expect(JSON.parse(content[1].text ?? "{}").regions).toEqual([]);
+  });
+
+  it("returns a tool error for a missing file", async () => {
+    const result = await client.callTool({
+      name: "brickognize_scan_image",
+      arguments: { imagePath: join(dir, "missing.png"), detectOnly: true },
+    });
+    expect(isError(result)).toBe(true);
+    expect(textContent(result)).toContain("not found");
+  });
+
+  it("rejects boxes approved on a photo of another size", async () => {
+    const result = await client.callTool({
+      name: "brickognize_scan_image",
+      arguments: {
+        imagePath: photoPath,
+        boxes: [[10, 10, 30, 30]],
+        imageSize: { width: 4032, height: 3024 },
+      },
+    });
+    expect(isError(result)).toBe(true);
+    expect(textContent(result)).toContain("4032x3024");
+  });
+
+  it("rejects boxes that are not four numbers", async () => {
+    const result = await client.callTool({
+      name: "brickognize_scan_image",
+      arguments: { imagePath: photoPath, boxes: [[1, 2, 3]] },
+    });
+    expect(isError(result)).toBe(true);
   });
 });
 
